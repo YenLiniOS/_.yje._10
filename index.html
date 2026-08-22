@@ -1,0 +1,2897 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#08090d">
+  <meta name="description" content="YOUNJ Archive — GitHub Pages File Manager">
+  <title>YOUNJ Archive — File Manager</title>
+
+  <style>
+    :root {
+      --bg: #07080c;
+      --bg-2: #0c0e14;
+      --card: rgba(255,255,255,.055);
+      --card-2: rgba(255,255,255,.085);
+      --border: rgba(255,255,255,.10);
+      --border-hover: rgba(255,255,255,.18);
+      --text: #f7f7fa;
+      --muted: #8f94a3;
+      --muted-2: #666b79;
+      --accent: #8b7cff;
+      --accent-2: #5e9cff;
+      --success: #50d890;
+      --danger: #ff667c;
+      --warning: #ffca63;
+      --radius: 22px;
+      --shadow: 0 20px 70px rgba(0,0,0,.38);
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(116,93,255,.16), transparent 30%),
+        radial-gradient(circle at 90% 15%, rgba(49,141,255,.12), transparent 27%),
+        radial-gradient(circle at 50% 100%, rgba(142,70,255,.08), transparent 35%),
+        var(--bg);
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        "SF Pro Text",
+        Inter,
+        system-ui,
+        sans-serif;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(
+          115deg,
+          transparent 0%,
+          rgba(255,255,255,.025) 45%,
+          transparent 55%
+        );
+      opacity: .8;
+      z-index: -1;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .app {
+      width: min(1500px, calc(100% - 32px));
+      margin: auto;
+      padding: 22px 0 50px;
+    }
+
+    /* =========================================================
+       TOPBAR
+    ========================================================= */
+
+    .topbar {
+      position: sticky;
+      top: 12px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-height: 72px;
+      padding: 12px 14px 12px 18px;
+      margin-bottom: 18px;
+      border: 1px solid var(--border);
+      border-radius: 25px;
+      background: rgba(14,15,21,.72);
+      backdrop-filter: blur(30px) saturate(160%);
+      -webkit-backdrop-filter: blur(30px) saturate(160%);
+      box-shadow:
+        0 20px 60px rgba(0,0,0,.25),
+        inset 0 1px rgba(255,255,255,.06);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      min-width: max-content;
+    }
+
+    .brand-logo {
+      width: 42px;
+      height: 42px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background:
+        linear-gradient(145deg, rgba(139,124,255,.9), rgba(75,118,255,.65));
+      box-shadow:
+        0 10px 30px rgba(100,90,255,.25),
+        inset 0 1px rgba(255,255,255,.3);
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: -1px;
+    }
+
+    .brand-text strong {
+      display: block;
+      font-size: 15px;
+      letter-spacing: -.3px;
+    }
+
+    .brand-text span {
+      display: block;
+      margin-top: 2px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .search {
+      position: relative;
+      flex: 1;
+      max-width: 650px;
+      margin: auto;
+    }
+
+    .search input {
+      width: 100%;
+      height: 44px;
+      padding: 0 45px 0 43px;
+      border: 1px solid rgba(255,255,255,.08);
+      outline: none;
+      border-radius: 14px;
+      color: var(--text);
+      background: rgba(255,255,255,.045);
+      transition: .2s ease;
+    }
+
+    .search input::placeholder {
+      color: #737887;
+    }
+
+    .search input:focus {
+      border-color: rgba(139,124,255,.45);
+      background: rgba(255,255,255,.065);
+      box-shadow: 0 0 0 4px rgba(139,124,255,.07);
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 15px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .search-kbd {
+      position: absolute;
+      right: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted-2);
+      font-size: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 3px 6px;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 44px;
+      height: 44px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(255,255,255,.045);
+      cursor: pointer;
+      transition: .2s ease;
+    }
+
+    .icon-btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--border-hover);
+      background: rgba(255,255,255,.08);
+    }
+
+    .icon-btn:active {
+      transform: scale(.96);
+    }
+
+    /* =========================================================
+       HERO
+    ========================================================= */
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 31px;
+      margin-bottom: 18px;
+      border: 1px solid var(--border);
+      border-radius: 28px;
+      background:
+        linear-gradient(
+          135deg,
+          rgba(139,124,255,.11),
+          rgba(255,255,255,.035) 45%,
+          rgba(69,137,255,.06)
+        );
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      box-shadow: var(--shadow);
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      width: 340px;
+      height: 340px;
+      right: -130px;
+      top: -180px;
+      border-radius: 50%;
+      background: rgba(110,93,255,.16);
+      filter: blur(55px);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-bottom: 10px;
+      color: #b6b0ff;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--success);
+      box-shadow: 0 0 14px rgba(80,216,144,.7);
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(28px, 5vw, 48px);
+      line-height: 1;
+      letter-spacing: -2.3px;
+    }
+
+    .hero p {
+      max-width: 650px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .repo-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      margin-top: 18px;
+      padding: 8px 11px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(0,0,0,.18);
+      color: #bfc2cc;
+      font-size: 11px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    /* =========================================================
+       STATS
+    ========================================================= */
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 19px;
+      background: var(--card);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    .stat-label {
+      color: var(--muted);
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+
+    /* =========================================================
+       MAIN LAYOUT
+    ========================================================= */
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 270px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background: rgba(12,14,20,.67);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      box-shadow: 0 15px 50px rgba(0,0,0,.2);
+    }
+
+    /* =========================================================
+       SIDEBAR
+    ========================================================= */
+
+    .sidebar {
+      position: sticky;
+      top: 102px;
+      overflow: hidden;
+    }
+
+    .sidebar-head {
+      padding: 17px 17px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+
+    .sidebar-head strong {
+      display: block;
+      font-size: 12px;
+    }
+
+    .sidebar-head span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 10px;
+    }
+
+    .tree {
+      max-height: calc(100vh - 180px);
+      overflow: auto;
+      padding: 10px;
+    }
+
+    .tree::-webkit-scrollbar,
+    .file-grid::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    .tree::-webkit-scrollbar-thumb,
+    .file-grid::-webkit-scrollbar-thumb {
+      background: rgba(255,255,255,.12);
+      border-radius: 20px;
+    }
+
+    .tree-item {
+      margin: 2px 0;
+    }
+
+    .tree-row {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      width: 100%;
+      min-height: 34px;
+      padding: 6px 8px;
+      border: 0;
+      border-radius: 9px;
+      color: #aeb2bd;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+      font-size: 11px;
+      transition: .16s ease;
+    }
+
+    .tree-row:hover {
+      color: var(--text);
+      background: rgba(255,255,255,.055);
+    }
+
+    .tree-row.active {
+      color: white;
+      background: rgba(139,124,255,.13);
+      box-shadow: inset 2px 0 rgba(139,124,255,.8);
+    }
+
+    .tree-arrow {
+      width: 12px;
+      color: #656a77;
+      transition: transform .2s ease;
+    }
+
+    .tree-arrow.open {
+      transform: rotate(90deg);
+    }
+
+    .tree-folder {
+      color: #a89cff;
+    }
+
+    .tree-children {
+      margin-left: 13px;
+      padding-left: 8px;
+      border-left: 1px solid rgba(255,255,255,.07);
+    }
+
+    /* =========================================================
+       CONTENT
+    ========================================================= */
+
+    .content {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .content-head {
+      padding: 18px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      overflow: auto;
+      scrollbar-width: none;
+      margin-bottom: 15px;
+    }
+
+    .breadcrumb::-webkit-scrollbar {
+      display: none;
+    }
+
+    .crumb {
+      flex: 0 0 auto;
+      color: var(--muted);
+      font-size: 11px;
+      cursor: pointer;
+    }
+
+    .crumb:hover {
+      color: white;
+    }
+
+    .crumb.current {
+      color: white;
+      font-weight: 700;
+    }
+
+    .crumb-sep {
+      flex: 0 0 auto;
+      color: #4f5360;
+      font-size: 10px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .folder-title {
+      min-width: 0;
+    }
+
+    .folder-title h2 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: -.6px;
+    }
+
+    .folder-title p {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 7px;
+    }
+
+    .small-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      height: 38px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      color: #c6c8d0;
+      background: rgba(255,255,255,.04);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 600;
+      transition: .18s ease;
+    }
+
+    .small-btn:hover {
+      color: white;
+      background: rgba(255,255,255,.08);
+      border-color: var(--border-hover);
+    }
+
+    .small-btn.primary {
+      border-color: rgba(139,124,255,.28);
+      background: rgba(139,124,255,.12);
+      color: #c6c0ff;
+    }
+
+    /* =========================================================
+       FILE GRID
+    ========================================================= */
+
+    .file-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 12px;
+      padding: 18px;
+    }
+
+    .file-card {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: rgba(255,255,255,.035);
+      transition:
+        transform .2s ease,
+        border-color .2s ease,
+        background .2s ease;
+      animation: cardIn .35s both;
+    }
+
+    @keyframes cardIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .file-card:hover {
+      transform: translateY(-3px);
+      border-color: var(--border-hover);
+      background: rgba(255,255,255,.06);
+    }
+
+    .preview {
+      position: relative;
+      height: 145px;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        linear-gradient(
+          135deg,
+          rgba(255,255,255,.045),
+          rgba(255,255,255,.015)
+        );
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+
+    .preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform .35s ease;
+    }
+
+    .file-card:hover .preview img {
+      transform: scale(1.035);
+    }
+
+    .preview video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .preview audio {
+      width: calc(100% - 22px);
+    }
+
+    .file-icon {
+      width: 56px;
+      height: 56px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: rgba(255,255,255,.055);
+      border: 1px solid rgba(255,255,255,.08);
+      color: #a9adba;
+      font-size: 22px;
+    }
+
+    .file-type {
+      position: absolute;
+      top: 9px;
+      left: 9px;
+      padding: 4px 7px;
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 7px;
+      background: rgba(0,0,0,.48);
+      backdrop-filter: blur(10px);
+      color: #dddfe5;
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .file-body {
+      padding: 12px;
+    }
+
+    .file-name {
+      overflow: hidden;
+      color: #e8e9ed;
+      font-size: 12px;
+      font-weight: 700;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .file-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      margin-top: 5px;
+      color: var(--muted-2);
+      font-size: 9px;
+    }
+
+    .file-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-top: 10px;
+    }
+
+    .action-btn {
+      height: 32px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 9px;
+      background: rgba(255,255,255,.04);
+      color: #aeb1bb;
+      cursor: pointer;
+      font-size: 9px;
+      font-weight: 700;
+      transition: .16s ease;
+    }
+
+    .action-btn:hover {
+      color: white;
+      background: rgba(255,255,255,.08);
+    }
+
+    .action-btn.copy {
+      color: #b9b2ff;
+      border-color: rgba(139,124,255,.16);
+    }
+
+    /* =========================================================
+       FOLDER CARD
+    ========================================================= */
+
+    .folder-card {
+      min-height: 105px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background:
+        linear-gradient(
+          145deg,
+          rgba(139,124,255,.075),
+          rgba(255,255,255,.025)
+        );
+      cursor: pointer;
+      transition: .2s ease;
+      animation: cardIn .35s both;
+    }
+
+    .folder-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(139,124,255,.28);
+      background: rgba(139,124,255,.09);
+    }
+
+    .folder-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .folder-icon {
+      font-size: 27px;
+      filter: drop-shadow(0 5px 12px rgba(139,124,255,.2));
+    }
+
+    .folder-count {
+      color: var(--muted);
+      font-size: 9px;
+    }
+
+    .folder-name {
+      margin-top: 16px;
+      overflow: hidden;
+      font-size: 12px;
+      font-weight: 750;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* =========================================================
+       EMPTY / LOADING
+    ========================================================= */
+
+    .state {
+      min-height: 360px;
+      display: grid;
+      place-items: center;
+      padding: 40px;
+      text-align: center;
+    }
+
+    .state-inner {
+      max-width: 390px;
+    }
+
+    .state-icon {
+      width: 66px;
+      height: 66px;
+      display: grid;
+      place-items: center;
+      margin: auto;
+      border-radius: 20px;
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--border);
+      font-size: 26px;
+    }
+
+    .state h3 {
+      margin: 15px 0 7px;
+      font-size: 16px;
+    }
+
+    .state p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      margin: auto;
+      border: 2px solid rgba(255,255,255,.12);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* =========================================================
+       MODAL
+    ========================================================= */
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 500;
+      display: none;
+      place-items: center;
+      padding: 20px;
+      background: rgba(0,0,0,.68);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .modal-backdrop.show {
+      display: grid;
+    }
+
+    .modal {
+      width: min(920px, 100%);
+      max-height: 90vh;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 24px;
+      background: rgba(15,16,22,.94);
+      box-shadow: 0 35px 100px rgba(0,0,0,.55);
+      animation: modalIn .22s ease;
+    }
+
+    @keyframes modalIn {
+      from {
+        opacity: 0;
+        transform: scale(.97) translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+      }
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 15px 17px;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+
+    .modal-title {
+      min-width: 0;
+    }
+
+    .modal-title strong {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .modal-title span {
+      display: block;
+      margin-top: 3px;
+      overflow: hidden;
+      color: var(--muted);
+      font-size: 9px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .modal-body {
+      max-height: calc(90vh - 70px);
+      overflow: auto;
+      padding: 18px;
+    }
+
+    .modal-body img,
+    .modal-body video {
+      display: block;
+      width: 100%;
+      max-height: 65vh;
+      object-fit: contain;
+      border-radius: 14px;
+      background: #050609;
+    }
+
+    .modal-body audio {
+      width: 100%;
+      margin: 15px 0;
+    }
+
+    .code-preview {
+      margin: 0;
+      padding: 18px;
+      overflow: auto;
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 14px;
+      background: #08090d;
+      color: #c9ccd5;
+      font: 12px/1.65 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-bottom: 14px;
+    }
+
+    /* =========================================================
+       TOAST
+    ========================================================= */
+
+    .toast-container {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: min(360px, calc(100vw - 36px));
+    }
+
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 13px 14px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: rgba(20,21,28,.9);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 15px 40px rgba(0,0,0,.35);
+      color: #dddfe6;
+      font-size: 11px;
+      animation: toastIn .25s ease;
+    }
+
+    .toast.success {
+      border-color: rgba(80,216,144,.18);
+    }
+
+    .toast.error {
+      border-color: rgba(255,102,124,.22);
+    }
+
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* =========================================================
+       RESPONSIVE
+    ========================================================= */
+
+    @media (max-width: 950px) {
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+      }
+
+      .tree {
+        max-height: 260px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .search {
+        max-width: none;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .app {
+        width: min(100% - 16px, 1500px);
+        padding-top: 8px;
+      }
+
+      .topbar {
+        top: 7px;
+        padding: 10px;
+        border-radius: 20px;
+        flex-wrap: wrap;
+      }
+
+      .brand {
+        flex: 1;
+      }
+
+      .search {
+        order: 3;
+        flex-basis: 100%;
+      }
+
+      .hero {
+        padding: 23px;
+        border-radius: 23px;
+      }
+
+      .hero h1 {
+        letter-spacing: -1.5px;
+      }
+
+      .stats {
+        gap: 8px;
+      }
+
+      .stat {
+        padding: 14px;
+      }
+
+      .stat-value {
+        font-size: 20px;
+      }
+
+      .workspace {
+        gap: 10px;
+      }
+
+      .panel {
+        border-radius: 20px;
+      }
+
+      .file-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        padding: 10px;
+      }
+
+      .preview {
+        height: 120px;
+      }
+
+      .file-body {
+        padding: 10px;
+      }
+
+      .file-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .toolbar-actions {
+        width: 100%;
+      }
+
+      .toolbar-actions .small-btn {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 390px) {
+      .file-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .preview {
+        height: 170px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+
+    <div class="brand">
+      <div class="brand-logo">YJ</div>
+
+      <div class="brand-text">
+        <strong>YOUNJ Archive</strong>
+        <span>GitHub File Manager</span>
+      </div>
+    </div>
+
+    <div class="search">
+      <span class="search-icon">⌕</span>
+
+      <input
+        id="searchInput"
+        type="search"
+        placeholder="Tìm file, thư mục..."
+        autocomplete="off"
+        spellcheck="false"
+      >
+
+      <span class="search-kbd">⌘ K</span>
+    </div>
+
+    <div class="top-actions">
+
+      <button
+        class="icon-btn"
+        id="githubBtn"
+        title="Mở GitHub"
+        aria-label="Mở GitHub"
+      >
+        ↗
+      </button>
+
+      <button
+        class="icon-btn"
+        id="refreshBtn"
+        title="Refresh"
+        aria-label="Refresh"
+      >
+        ↻
+      </button>
+
+    </div>
+
+  </header>
+
+
+  <!-- HERO -->
+  <section class="hero">
+
+    <div class="hero-content">
+
+      <div class="eyebrow">
+        <span class="status-dot"></span>
+        ONLINE · GITHUB PAGES
+      </div>
+
+      <h1>YOUNJ Archive</h1>
+
+      <p>
+        Kho lưu trữ file được quản lý trực tiếp từ GitHub.
+        Duyệt thư mục, xem preview và sao chép link CDN
+        chỉ với một chạm.
+      </p>
+
+      <div class="repo-badge">
+        <span>◈</span>
+        <span id="repoText">YenLiniOS / _.yje._10</span>
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- STATS -->
+  <section class="stats">
+
+    <div class="stat">
+      <div class="stat-label">TOTAL FILES</div>
+      <div class="stat-value" id="fileCount">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">FOLDERS</div>
+      <div class="stat-value" id="folderCount">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">IMAGES</div>
+      <div class="stat-value" id="imageCount">—</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">STATUS</div>
+      <div class="stat-value" id="statusValue">...</div>
+    </div>
+
+  </section>
+
+
+  <!-- WORKSPACE -->
+  <main class="workspace">
+
+    <!-- SIDEBAR -->
+    <aside class="panel sidebar">
+
+      <div class="sidebar-head">
+        <strong>Repository</strong>
+        <span>Browse files & folders</span>
+      </div>
+
+      <div class="tree" id="tree">
+        <div class="state">
+          <div class="state-inner">
+            <div class="spinner"></div>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+
+
+    <!-- CONTENT -->
+    <section class="panel content">
+
+      <div class="content-head">
+
+        <div class="breadcrumb" id="breadcrumb"></div>
+
+        <div class="toolbar">
+
+          <div class="folder-title">
+            <h2 id="currentTitle">Loading...</h2>
+            <p id="currentDescription">Đang tải dữ liệu repository...</p>
+          </div>
+
+          <div class="toolbar-actions">
+
+            <button
+              class="small-btn"
+              id="copyFolderBtn"
+            >
+              ⧉ Copy Folder
+            </button>
+
+            <button
+              class="small-btn primary"
+              id="refreshMainBtn"
+            >
+              ↻ Refresh
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div id="contentArea">
+
+        <div class="state">
+          <div class="state-inner">
+            <div class="spinner"></div>
+            <h3>Đang tải repository...</h3>
+            <p>
+              Đang lấy danh sách file từ GitHub.
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+</div>
+
+
+<!-- MODAL -->
+<div class="modal-backdrop" id="modalBackdrop">
+
+  <div class="modal">
+
+    <div class="modal-head">
+
+      <div class="modal-title">
+        <strong id="modalTitle">Preview</strong>
+        <span id="modalPath"></span>
+      </div>
+
+      <button
+        class="icon-btn"
+        id="closeModal"
+        aria-label="Đóng"
+      >
+        ×
+      </button>
+
+    </div>
+
+    <div class="modal-body" id="modalBody"></div>
+
+  </div>
+
+</div>
+
+
+<!-- TOAST -->
+<div class="toast-container" id="toastContainer"></div>
+
+
+<script>
+/* ============================================================
+   YOUNJ ARCHIVE
+   Repository configuration
+============================================================ */
+
+const CONFIG = {
+  owner: "YenLiniOS",
+  repo: "_.yje._10",
+  branch: "main",
+
+  // GitHub Pages base URL
+  pagesBase:
+    "https://yenlinios.github.io/_.yje._10",
+
+  // GitHub API
+  treeAPI:
+    "https://api.github.com/repos/YenLiniOS/_.yje._10/git/trees/main?recursive=1",
+
+  // Raw GitHub
+  rawBase:
+    "https://raw.githubusercontent.com/YenLiniOS/_.yje._10/main/"
+};
+
+
+/* ============================================================
+   STATE
+============================================================ */
+
+const state = {
+  files: [],
+  folders: [],
+  tree: {},
+  currentPath: "",
+  search: "",
+  loading: false
+};
+
+
+/* ============================================================
+   DOM
+============================================================ */
+
+const $ = selector => document.querySelector(selector);
+
+const searchInput = $("#searchInput");
+const treeEl = $("#tree");
+const contentArea = $("#contentArea");
+const breadcrumb = $("#breadcrumb");
+
+const currentTitle = $("#currentTitle");
+const currentDescription = $("#currentDescription");
+
+const fileCount = $("#fileCount");
+const folderCount = $("#folderCount");
+const imageCount = $("#imageCount");
+const statusValue = $("#statusValue");
+
+const modalBackdrop = $("#modalBackdrop");
+const modalBody = $("#modalBody");
+const modalTitle = $("#modalTitle");
+const modalPath = $("#modalPath");
+
+
+/* ============================================================
+   HELPERS
+============================================================ */
+
+function escapeHTML(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+
+function formatBytes(bytes) {
+
+  if (!bytes || bytes < 1) {
+    return "—";
+  }
+
+  const units = [
+    "B",
+    "KB",
+    "MB",
+    "GB"
+  ];
+
+  let index = 0;
+  let size = bytes;
+
+  while (size >= 1024 && index < units.length - 1) {
+    size /= 1024;
+    index++;
+  }
+
+  return `${size.toFixed(size >= 10 ? 0 : 1)} ${units[index]}`;
+}
+
+
+function getExtension(path) {
+
+  const name = path.split("/").pop();
+
+  if (!name.includes(".")) {
+    return "";
+  }
+
+  return name.split(".").pop().toLowerCase();
+}
+
+
+function getName(path) {
+  return path.split("/").pop() || path;
+}
+
+
+function encodePath(path) {
+
+  return path
+    .split("/")
+    .map(part => encodeURIComponent(part))
+    .join("/");
+}
+
+
+function pagesURL(path) {
+
+  return `${CONFIG.pagesBase}/${encodePath(path)}`;
+}
+
+
+function rawURL(path) {
+
+  return `${CONFIG.rawBase}${encodePath(path)}`;
+}
+
+
+function githubURL(path) {
+
+  return `https://github.com/${CONFIG.owner}/${CONFIG.repo}/blob/${CONFIG.branch}/${encodePath(path)}`;
+}
+
+
+function folderPagesURL(path) {
+
+  if (!path) {
+    return CONFIG.pagesBase + "/";
+  }
+
+  return `${CONFIG.pagesBase}/${encodePath(path)}/`;
+}
+
+
+/* ============================================================
+   FILE TYPES
+============================================================ */
+
+const IMAGE_EXTENSIONS = new Set([
+  "jpg",
+  "jpeg",
+  "png",
+  "gif",
+  "webp",
+  "avif",
+  "bmp",
+  "svg",
+  "ico"
+]);
+
+
+const AUDIO_EXTENSIONS = new Set([
+  "mp3",
+  "wav",
+  "ogg",
+  "m4a",
+  "aac",
+  "flac",
+  "opus"
+]);
+
+
+const VIDEO_EXTENSIONS = new Set([
+  "mp4",
+  "webm",
+  "mov",
+  "m4v",
+  "ogv"
+]);
+
+
+const TEXT_EXTENSIONS = new Set([
+  "txt",
+  "json",
+  "js",
+  "css",
+  "html",
+  "htm",
+  "xml",
+  "md",
+  "csv",
+  "log",
+  "yaml",
+  "yml",
+  "ini",
+  "conf",
+  "plist"
+]);
+
+
+function isImage(file) {
+  return IMAGE_EXTENSIONS.has(getExtension(file.path));
+}
+
+
+function isAudio(file) {
+  return AUDIO_EXTENSIONS.has(getExtension(file.path));
+}
+
+
+function isVideo(file) {
+  return VIDEO_EXTENSIONS.has(getExtension(file.path));
+}
+
+
+function isText(file) {
+  return TEXT_EXTENSIONS.has(getExtension(file.path));
+}
+
+
+function getFileIcon(file) {
+
+  if (isImage(file)) return "▧";
+  if (isAudio(file)) return "♫";
+  if (isVideo(file)) return "▶";
+  if (isText(file)) return "≡";
+
+  const ext = getExtension(file.path);
+
+  if (ext === "zip" || ext === "rar" || ext === "7z") {
+    return "◈";
+  }
+
+  if (ext === "pdf") {
+    return "▤";
+  }
+
+  return "◇";
+}
+
+
+/* ============================================================
+   LOAD GITHUB TREE
+============================================================ */
+
+async function loadRepository(showToastMessage = false) {
+
+  if (state.loading) {
+    return;
+  }
+
+  state.loading = true;
+
+  statusValue.textContent = "...";
+
+  try {
+
+    const response = await fetch(CONFIG.treeAPI, {
+      headers: {
+        "Accept": "application/vnd.github+json"
+      },
+      cache: "no-store"
+    });
+
+    if (!response.ok) {
+
+      if (response.status === 403) {
+        throw new Error(
+          "GitHub API đang giới hạn request. Hãy thử lại sau."
+        );
+      }
+
+      throw new Error(
+        `GitHub API Error ${response.status}`
+      );
+    }
+
+    const data = await response.json();
+
+    if (data.truncated) {
+      showToast(
+        "Repository quá lớn, GitHub đã cắt bớt danh sách file.",
+        "error"
+      );
+    }
+
+    state.files = (data.tree || [])
+      .filter(item => item.type === "blob")
+      .map(item => ({
+        path: item.path,
+        size: item.size || 0,
+        sha: item.sha,
+        url: item.url
+      }));
+
+    buildFolders();
+    buildTree();
+
+    fileCount.textContent =
+      state.files.length.toLocaleString("vi-VN");
+
+    folderCount.textContent =
+      state.folders.length.toLocaleString("vi-VN");
+
+    imageCount.textContent =
+      state.files.filter(isImage).length.toLocaleString("vi-VN");
+
+    statusValue.textContent = "OK";
+
+    statusValue.style.color = "var(--success)";
+
+    renderTree();
+    renderBreadcrumb();
+    renderCurrentFolder();
+
+    if (showToastMessage) {
+      showToast(
+        `Đã cập nhật ${state.files.length} file.`,
+        "success"
+      );
+    }
+
+  } catch (error) {
+
+    console.error(error);
+
+    statusValue.textContent = "ERR";
+    statusValue.style.color = "var(--danger)";
+
+    contentArea.innerHTML = `
+      <div class="state">
+        <div class="state-inner">
+          <div class="state-icon">!</div>
+
+          <h3>Không thể tải repository</h3>
+
+          <p>
+            ${escapeHTML(error.message)}
+          </p>
+
+          <br>
+
+          <button
+            class="small-btn primary"
+            onclick="loadRepository(true)"
+          >
+            ↻ Thử lại
+          </button>
+        </div>
+      </div>
+    `;
+
+  } finally {
+
+    state.loading = false;
+  }
+}
+
+
+/* ============================================================
+   BUILD FOLDERS
+============================================================ */
+
+function buildFolders() {
+
+  const folderSet = new Set();
+
+  for (const file of state.files) {
+
+    const parts = file.path.split("/");
+
+    parts.pop();
+
+    let current = "";
+
+    for (const part of parts) {
+
+      current = current
+        ? `${current}/${part}`
+        : part;
+
+      folderSet.add(current);
+    }
+  }
+
+  state.folders = Array.from(folderSet).sort(
+    (a, b) =>
+      a.localeCompare(b, undefined, {
+        numeric: true,
+        sensitivity: "base"
+      })
+  );
+}
+
+
+/* ============================================================
+   BUILD TREE
+============================================================ */
+
+function buildTree() {
+
+  const root = {
+    name: CONFIG.repo,
+    path: "",
+    folders: {},
+    files: []
+  };
+
+  for (const file of state.files) {
+
+    const parts = file.path.split("/");
+
+    let node = root;
+
+    parts.forEach((part, index) => {
+
+      const isLast = index === parts.length - 1;
+
+      if (isLast) {
+
+        node.files.push(file);
+
+      } else {
+
+        if (!node.folders[part]) {
+
+          const folderPath = parts
+            .slice(0, index + 1)
+            .join("/");
+
+          node.folders[part] = {
+            name: part,
+            path: folderPath,
+            folders: {},
+            files: []
+          };
+        }
+
+        node = node.folders[part];
+      }
+
+    });
+  }
+
+  state.tree = root;
+}
+
+
+/* ============================================================
+   GET NODE
+============================================================ */
+
+function getNode(path) {
+
+  if (!path) {
+    return state.tree;
+  }
+
+  const parts = path.split("/");
+
+  let node = state.tree;
+
+  for (const part of parts) {
+
+    if (!node.folders[part]) {
+      return null;
+    }
+
+    node = node.folders[part];
+  }
+
+  return node;
+}
+
+
+/* ============================================================
+   TREE SIDEBAR
+============================================================ */
+
+function renderTree() {
+
+  treeEl.innerHTML = "";
+
+  const rootButton = document.createElement("button");
+
+  rootButton.className =
+    `tree-row ${state.currentPath === "" ? "active" : ""}`;
+
+  rootButton.innerHTML = `
+    <span class="tree-arrow"></span>
+    <span class="tree-folder">⌂</span>
+    <span>${escapeHTML(CONFIG.repo)}</span>
+  `;
+
+  rootButton.onclick = () => {
+    openFolder("");
+  };
+
+  treeEl.appendChild(rootButton);
+
+  renderTreeFolders(
+    state.tree,
+    treeEl,
+    0
+  );
+}
+
+
+function renderTreeFolders(node, parent, level) {
+
+  const folders = Object.values(node.folders)
+    .sort((a, b) =>
+      a.name.localeCompare(
+        b.name,
+        undefined,
+        {
+          numeric: true,
+          sensitivity: "base"
+        }
+      )
+    );
+
+  for (const folder of folders) {
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "tree-item";
+
+    const hasChildren =
+      Object.keys(folder.folders).length > 0;
+
+    const row = document.createElement("button");
+
+    row.className =
+      `tree-row ${
+        state.currentPath === folder.path
+          ? "active"
+          : ""
+      }`;
+
+    row.style.paddingLeft =
+      `${8 + level * 10}px`;
+
+    row.innerHTML = `
+      <span class="tree-arrow ${
+        hasChildren ? "" : "open"
+      }">
+        ${hasChildren ? "›" : ""}
+      </span>
+
+      <span class="tree-folder">▰</span>
+
+      <span>
+        ${escapeHTML(folder.name)}
+      </span>
+    `;
+
+    row.onclick = () => {
+      openFolder(folder.path);
+    };
+
+    wrapper.appendChild(row);
+
+    if (hasChildren) {
+
+      const children =
+        document.createElement("div");
+
+      children.className = "tree-children";
+
+      renderTreeFolders(
+        folder,
+        children,
+        level + 1
+      );
+
+      wrapper.appendChild(children);
+    }
+
+    parent.appendChild(wrapper);
+  }
+}
+
+
+/* ============================================================
+   BREADCRUMB
+============================================================ */
+
+function renderBreadcrumb() {
+
+  breadcrumb.innerHTML = "";
+
+  const root = document.createElement("span");
+
+  root.className =
+    `crumb ${
+      !state.currentPath
+        ? "current"
+        : ""
+    }`;
+
+  root.textContent = "Repository";
+
+  root.onclick = () => {
+    openFolder("");
+  };
+
+  breadcrumb.appendChild(root);
+
+  if (!state.currentPath) {
+    return;
+  }
+
+  const parts =
+    state.currentPath.split("/");
+
+  let current = "";
+
+  parts.forEach((part, index) => {
+
+    const separator =
+      document.createElement("span");
+
+    separator.className = "crumb-sep";
+    separator.textContent = "/";
+
+    breadcrumb.appendChild(separator);
+
+    current = current
+      ? `${current}/${part}`
+      : part;
+
+    const crumb =
+      document.createElement("span");
+
+    crumb.className =
+      `crumb ${
+        index === parts.length - 1
+          ? "current"
+          : ""
+      }`;
+
+    crumb.textContent = part;
+
+    const target = current;
+
+    crumb.onclick = () => {
+      openFolder(target);
+    };
+
+    breadcrumb.appendChild(crumb);
+  });
+}
+
+
+/* ============================================================
+   OPEN FOLDER
+============================================================ */
+
+function openFolder(path) {
+
+  state.currentPath = path;
+  state.search = "";
+
+  searchInput.value = "";
+
+  renderTree();
+  renderBreadcrumb();
+  renderCurrentFolder();
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+
+
+/* ============================================================
+   RENDER CURRENT FOLDER
+============================================================ */
+
+function renderCurrentFolder() {
+
+  const node =
+    getNode(state.currentPath);
+
+  if (!node) {
+    return;
+  }
+
+  const directFiles =
+    node.files || [];
+
+  const childFolders =
+    Object.values(node.folders || {});
+
+  currentTitle.textContent =
+    state.currentPath
+      ? getName(state.currentPath)
+      : CONFIG.repo;
+
+  currentDescription.textContent =
+    `${childFolders.length} thư mục · ${directFiles.length} file`;
+
+  if (
+    childFolders.length === 0 &&
+    directFiles.length === 0
+  ) {
+
+    contentArea.innerHTML = `
+      <div class="state">
+        <div class="state-inner">
+          <div class="state-icon">∅</div>
+          <h3>Thư mục trống</h3>
+          <p>
+            Chưa có file nào trong thư mục này.
+          </p>
+        </div>
+      </div>
+    `;
+
+    return;
+  }
+
+  const grid =
+    document.createElement("div");
+
+  grid.className = "file-grid";
+
+  childFolders
+    .sort((a, b) =>
+      a.name.localeCompare(
+        b.name,
+        undefined,
+        {
+          numeric: true,
+          sensitivity: "base"
+        }
+      )
+    )
+    .forEach((folder, index) => {
+
+      const card =
+        createFolderCard(
+          folder,
+          index
+        );
+
+      grid.appendChild(card);
+    });
+
+  directFiles
+    .sort((a, b) =>
+      getName(a.path).localeCompare(
+        getName(b.path),
+        undefined,
+        {
+          numeric: true,
+          sensitivity: "base"
+        }
+      )
+    )
+    .forEach((file, index) => {
+
+      const card =
+        createFileCard(
+          file,
+          index
+        );
+
+      grid.appendChild(card);
+    });
+
+  contentArea.innerHTML = "";
+  contentArea.appendChild(grid);
+}
+
+
+/* ============================================================
+   FOLDER CARD
+============================================================ */
+
+function createFolderCard(folder, index) {
+
+  const card =
+    document.createElement("div");
+
+  card.className = "folder-card";
+
+  card.style.animationDelay =
+    `${Math.min(index * 25, 250)}ms`;
+
+  const count =
+    countFilesInFolder(folder.path);
+
+  card.innerHTML = `
+    <div class="folder-top">
+      <span class="folder-icon">▰</span>
+      <span class="folder-count">
+        ${count} file
+      </span>
+    </div>
+
+    <div class="folder-name">
+      ${escapeHTML(folder.name)}
+    </div>
+  `;
+
+  card.onclick = () => {
+    openFolder(folder.path);
+  };
+
+  return card;
+}
+
+
+function countFilesInFolder(path) {
+
+  const prefix = path
+    ? `${path}/`
+    : "";
+
+  return state.files.filter(file =>
+    file.path.startsWith(prefix)
+  ).length;
+}
+
+
+/* ============================================================
+   FILE CARD
+============================================================ */
+
+function createFileCard(file, index) {
+
+  const card =
+    document.createElement("article");
+
+  card.className = "file-card";
+
+  card.style.animationDelay =
+    `${Math.min(index * 20, 250)}ms`;
+
+  const ext =
+    getExtension(file.path);
+
+  const name =
+    getName(file.path);
+
+  let preview = "";
+
+  if (isImage(file)) {
+
+    preview = `
+      <img
+        src="${pagesURL(file.path)}"
+        alt="${escapeHTML(name)}"
+        loading="lazy"
+        onerror="this.style.display='none'; this.nextElementSibling.style.display='grid';"
+      >
+
+      <div
+        class="file-icon"
+        style="display:none"
+      >
+        ▧
+      </div>
+    `;
+
+  } else if (isVideo(file)) {
+
+    preview = `
+      <video
+        src="${pagesURL(file.path)}"
+        muted
+        preload="metadata"
+      ></video>
+    `;
+
+  } else if (isAudio(file)) {
+
+    preview = `
+      <div class="file-icon">♫</div>
+    `;
+
+  } else {
+
+    preview = `
+      <div class="file-icon">
+        ${getFileIcon(file)}
+      </div>
+    `;
+  }
+
+  card.innerHTML = `
+    <div class="preview">
+
+      ${preview}
+
+      <span class="file-type">
+        ${escapeHTML(ext || "FILE")}
+      </span>
+
+    </div>
+
+    <div class="file-body">
+
+      <div
+        class="file-name"
+        title="${escapeHTML(name)}"
+      >
+        ${escapeHTML(name)}
+      </div>
+
+      <div class="file-meta">
+
+        <span>
+          ${formatBytes(file.size)}
+        </span>
+
+        <span>
+          ${escapeHTML(ext || "file")}
+        </span>
+
+      </div>
+
+      ${
+        isAudio(file)
+          ? `
+            <audio
+              controls
+              preload="none"
+              src="${pagesURL(file.path)}"
+              style="margin-top:9px"
+            ></audio>
+          `
+          : ""
+      }
+
+      <div class="file-actions">
+
+        <button
+          class="action-btn"
+          data-preview
+        >
+          ${isImage(file) || isVideo(file) || isAudio(file) || isText(file)
+            ? "Preview"
+            : "Open"}
+        </button>
+
+        <button
+          class="action-btn copy"
+          data-copy
+        >
+          Copy Link
+        </button>
+
+      </div>
+
+    </div>
+  `;
+
+  const previewBtn =
+    card.querySelector("[data-preview]");
+
+  const copyBtn =
+    card.querySelector("[data-copy]");
+
+  previewBtn.onclick = event => {
+
+    event.stopPropagation();
+
+    if (isImage(file) ||
+        isVideo(file) ||
+        isAudio(file) ||
+        isText(file)) {
+
+      openPreview(file);
+
+    } else {
+
+      window.open(
+        githubURL(file.path),
+        "_blank",
+        "noopener"
+      );
+    }
+  };
+
+  copyBtn.onclick = async event => {
+
+    event.stopPropagation();
+
+    await copyText(
+      pagesURL(file.path),
+      "Đã copy GitHub Pages URL!"
+    );
+  };
+
+  return card;
+}
+
+
+/* ============================================================
+   PREVIEW
+============================================================ */
+
+async function openPreview(file) {
+
+  modalTitle.textContent =
+    getName(file.path);
+
+  modalPath.textContent =
+    file.path;
+
+  modalBody.innerHTML = `
+    <div class="spinner"></div>
+  `;
+
+  modalBackdrop.classList.add("show");
+
+  if (isImage(file)) {
+
+    modalBody.innerHTML = `
+
+      <div class="modal-actions">
+
+        <button
+          class="small-btn primary"
+          onclick="copyText(
+            pagesURL('${escapeJS(file.path)}'),
+            'Đã copy GitHub Pages URL!'
+          )"
+        >
+          ⧉ Copy Pages URL
+        </button>
+
+        <button
+          class="small-btn"
+          onclick="copyText(
+            rawURL('${escapeJS(file.path)}'),
+            'Đã copy Raw URL!'
+          )"
+        >
+          ⚡ Copy Raw URL
+        </button>
+
+        <a
+          class="small-btn"
+          href="${pagesURL(file.path)}"
+          target="_blank"
+          rel="noopener"
+        >
+          ↗ Open
+        </a>
+
+      </div>
+
+      <img
+        src="${pagesURL(file.path)}"
+        alt="${escapeHTML(getName(file.path))}"
+      />
+    `;
+
+    return;
+  }
+
+
+  if (isVideo(file)) {
+
+    modalBody.innerHTML = `
+
+      <div class="modal-actions">
+
+        <button
+          class="small-btn primary"
+          onclick="copyText(
+            pagesURL('${escapeJS(file.path)}'),
+            'Đã copy GitHub Pages URL!'
+          )"
+        >
+          ⧉ Copy Pages URL
+        </button>
+
+        <button
+          class="small-btn"
+          onclick="copyText(
+            rawURL('${escapeJS(file.path)}'),
+            'Đã copy Raw URL!'
+          )"
+        >
+          ⚡ Copy Raw URL
+        </button>
+
+      </div>
+
+      <video
+        src="${pagesURL(file.path)}"
+        controls
+        playsinline
+      ></video>
+    `;
+
+    return;
+  }
+
+
+  if (isAudio(file)) {
+
+    modalBody.innerHTML = `
+
+      <div class="modal-actions">
+
+        <button
+          class="small-btn primary"
+          onclick="copyText(
+            pagesURL('${escapeJS(file.path)}'),
+            'Đã copy GitHub Pages URL!'
+          )"
+        >
+          ⧉ Copy Pages URL
+        </button>
+
+        <button
+          class="small-btn"
+          onclick="copyText(
+            rawURL('${escapeJS(file.path)}'),
+            'Đã copy Raw URL!'
+          )"
+        >
+          ⚡ Copy Raw URL
+        </button>
+
+      </div>
+
+      <audio
+        src="${pagesURL(file.path)}"
+        controls
+        autoplay
+      ></audio>
+    `;
+
+    return;
+  }
+
+
+  if (isText(file)) {
+
+    try {
+
+      const response =
+        await fetch(rawURL(file.path));
+
+      if (!response.ok) {
+        throw new Error(
+          "Không thể đọc file."
+        );
+      }
+
+      let text =
+        await response.text();
+
+      const MAX_PREVIEW =
+        250000;
+
+      if (text.length > MAX_PREVIEW) {
+
+        text =
+          text.slice(0, MAX_PREVIEW) +
+          "\n\n...[Preview đã được cắt bớt]...";
+      }
+
+      modalBody.innerHTML = `
+
+        <div class="modal-actions">
+
+          <button
+            class="small-btn primary"
+            onclick="copyText(
+              pagesURL('${escapeJS(file.path)}'),
+              'Đã copy GitHub Pages URL!'
+            )"
+          >
+            ⧉ Copy Pages URL
+          </button>
+
+          <button
+            class="small-btn"
+            onclick="copyText(
+              rawURL('${escapeJS(file.path)}'),
+              'Đã copy Raw URL!'
+            )"
+          >
+            ⚡ Copy Raw URL
+          </button>
+
+          <a
+            class="small-btn"
+            href="${githubURL(file.path)}"
+            target="_blank"
+            rel="noopener"
+          >
+            ↗ GitHub
+          </a>
+
+        </div>
+
+        <pre class="code-preview">${escapeHTML(text)}</pre>
+      `;
+
+      return;
+
+    } catch (error) {
+
+      modalBody.innerHTML = `
+        <div class="state">
+          <div class="state-inner">
+            <div class="state-icon">!</div>
+            <h3>Không thể preview</h3>
+            <p>${escapeHTML(error.message)}</p>
+          </div>
+        </div>
+      `;
+
+      return;
+    }
+  }
+
+
+  window.open(
+    githubURL(file.path),
+    "_blank",
+    "noopener"
+  );
+}
+
+
+function escapeJS(value) {
+
+  return String(value)
+    .replaceAll("\\", "\\\\")
+    .replaceAll("'", "\\'")
+    .replaceAll("\n", "\\n")
+    .replaceAll("\r", "\\r");
+}
+
+
+/* ============================================================
+   SEARCH
+============================================================ */
+
+function searchFiles(query) {
+
+  state.search =
+    query.trim().toLowerCase();
+
+  if (!state.search) {
+
+    renderBreadcrumb();
+    renderCurrentFolder();
+
+    return;
+  }
+
+  const results =
+    state.files.filter(file => {
+
+      const path =
+        file.path.toLowerCase();
+
+      return path.includes(
+        state.search
+      );
+    });
+
+  currentTitle.textContent =
+    "Search Results";
+
+  currentDescription.textContent =
+    `${results.length} kết quả cho "${query}"`;
+
+  breadcrumb.innerHTML = `
+    <span class="crumb current">
+      Search
+    </span>
+  `;
+
+  if (!results.length) {
+
+    contentArea.innerHTML = `
+      <div class="state">
+        <div class="state-inner">
+          <div class="state-icon">⌕</div>
+          <h3>Không tìm thấy file</h3>
+          <p>
+            Không có file nào khớp với
+            <strong>${escapeHTML(query)}</strong>.
+          </p>
+        </div>
+      </div>
+    `;
+
+    return;
+  }
+
+  const grid =
+    document.createElement("div");
+
+  grid.className = "file-grid";
+
+  results.forEach((file, index) => {
+
+    grid.appendChild(
+      createFileCard(file, index)
+    );
+  });
+
+  contentArea.innerHTML = "";
+  contentArea.appendChild(grid);
+}
+
+
+/* ============================================================
+   COPY
+============================================================ */
+
+async function copyText(text, message) {
+
+  try {
+
+    if (
+      navigator.clipboard &&
+      window.isSecureContext
+    ) {
+
+      await navigator.clipboard.writeText(text);
+
+    } else {
+
+      const textarea =
+        document.createElement("textarea");
+
+      textarea.value = text;
+
+      textarea.style.position = "fixed";
+      textarea.style.opacity = "0";
+
+      document.body.appendChild(textarea);
+
+      textarea.focus();
+      textarea.select();
+
+      document.execCommand("copy");
+
+      textarea.remove();
+    }
+
+    showToast(
+      message || "Đã copy!",
+      "success"
+    );
+
+  } catch (error) {
+
+    console.error(error);
+
+    showToast(
+      "Không thể copy tự động.",
+      "error"
+    );
+  }
+}
+
+
+/* ============================================================
+   COPY CURRENT FOLDER
+============================================================ */
+
+$("#copyFolderBtn").onclick = async () => {
+
+  const url =
+    folderPagesURL(
+      state.currentPath
+    );
+
+  await copyText(
+    url,
+    "Đã copy link thư mục!"
+  );
+};
+
+
+/* ============================================================
+   TOAST
+============================================================ */
+
+function showToast(message, type = "success") {
+
+  const toast =
+    document.createElement("div");
+
+  toast.className =
+    `toast ${type}`;
+
+  toast.innerHTML = `
+    <span>
+      ${type === "success" ? "✓" : "!"}
+    </span>
+
+    <span>
+      ${escapeHTML(message)}
+    </span>
+  `;
+
+  $("#toastContainer")
+    .appendChild(toast);
+
+  setTimeout(() => {
+
+    toast.style.opacity = "0";
+    toast.style.transform =
+      "translateY(8px)";
+
+    setTimeout(() => {
+      toast.remove();
+    }, 250);
+
+  }, 2600);
+}
+
+
+/* ============================================================
+   MODAL EVENTS
+============================================================ */
+
+function closeModal() {
+
+  modalBackdrop.classList.remove(
+    "show"
+  );
+
+  modalBody.innerHTML = "";
+}
+
+
+$("#closeModal").onclick =
+  closeModal;
+
+
+modalBackdrop.addEventListener(
+  "click",
+  event => {
+
+    if (
+      event.target === modalBackdrop
+    ) {
+      closeModal();
+    }
+  }
+);
+
+
+document.addEventListener(
+  "keydown",
+  event => {
+
+    if (event.key === "Escape") {
+      closeModal();
+    }
+
+    if (
+      (event.metaKey || event.ctrlKey) &&
+      event.key.toLowerCase() === "k"
+    ) {
+
+      event.preventDefault();
+
+      searchInput.focus();
+    }
+  }
+);
+
+
+/* ============================================================
+   SEARCH EVENTS
+============================================================ */
+
+searchInput.addEventListener(
+  "input",
+  event => {
+
+    searchFiles(
+      event.target.value
+    );
+  }
+);
+
+
+/* ============================================================
+   REFRESH
+============================================================ */
+
+$("#refreshBtn").onclick = () => {
+
+  loadRepository(true);
+};
+
+
+$("#refreshMainBtn").onclick = () => {
+
+  loadRepository(true);
+};
+
+
+/* ============================================================
+   GITHUB
+============================================================ */
+
+$("#githubBtn").onclick = () => {
+
+  window.open(
+    `https://github.com/${CONFIG.owner}/${CONFIG.repo}`,
+    "_blank",
+    "noopener"
+  );
+};
+
+
+/* ============================================================
+   INITIALIZE
+============================================================ */
+
+loadRepository(false);
+
+</script>
+
+</body>
+</html>
