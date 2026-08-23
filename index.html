@@ -1122,6 +1122,158 @@
         height: 170px;
       }
     }
+    /* =========================================================
+   REDIRECT MANAGER
+========================================================= */
+
+.redirect-card {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid rgba(139,124,255,.14);
+  border-radius: 18px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(139,124,255,.075),
+      rgba(255,255,255,.025)
+    );
+  transition: .2s ease;
+  animation: cardIn .35s both;
+}
+
+.redirect-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(139,124,255,.3);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(139,124,255,.11),
+      rgba(255,255,255,.04)
+    );
+}
+
+.redirect-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 15px;
+  background: rgba(139,124,255,.12);
+  border: 1px solid rgba(139,124,255,.15);
+  color: #b8afff;
+  font-size: 22px;
+}
+
+.redirect-info {
+  min-width: 0;
+}
+
+.redirect-name {
+  overflow: hidden;
+  color: #f1f1f5;
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.redirect-target {
+  margin-top: 6px;
+  overflow: hidden;
+  color: #999eab;
+  font: 10px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.redirect-target span {
+  color: #8f82ff;
+}
+
+.redirect-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.redirect-btn {
+  height: 33px;
+  padding: 0 10px;
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 9px;
+  background: rgba(255,255,255,.045);
+  color: #b9bdc8;
+  cursor: pointer;
+  font-size: 9px;
+  font-weight: 750;
+  transition: .16s ease;
+}
+
+.redirect-btn:hover {
+  color: white;
+  background: rgba(255,255,255,.085);
+}
+
+.redirect-btn.primary {
+  color: #c1baff;
+  border-color: rgba(139,124,255,.2);
+  background: rgba(139,124,255,.1);
+}
+
+.redirect-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 7px;
+  color: #62dc99;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.redirect-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #50d890;
+  box-shadow: 0 0 10px rgba(80,216,144,.6);
+}
+
+.redirect-status.error {
+  color: #ff7185;
+}
+
+.redirect-status.error::before {
+  background: #ff667c;
+  box-shadow: 0 0 10px rgba(255,102,124,.5);
+}
+
+@media (max-width: 680px) {
+  .redirect-card {
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+
+  .redirect-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    font-size: 18px;
+  }
+
+  .redirect-actions {
+    grid-column: 1 / -1;
+    justify-content: stretch;
+  }
+
+  .redirect-btn {
+    flex: 1;
+  }
+}
   </style>
 </head>
 
@@ -2026,7 +2178,12 @@ function openFolder(path) {
 
   renderTree();
   renderBreadcrumb();
-  renderCurrentFolder();
+
+  if (path === "archive/data") {
+    renderRedirectManager();
+  } else {
+    renderCurrentFolder();
+  }
 
   window.scrollTo({
     top: 0,
@@ -2040,7 +2197,10 @@ function openFolder(path) {
 ============================================================ */
 
 function renderCurrentFolder() {
-
+  if (state.currentPath === "archive/data") {
+    renderRedirectManager();
+    return;
+  }
   const node =
     getNode(state.currentPath);
 
@@ -2884,6 +3044,457 @@ $("#githubBtn").onclick = () => {
   );
 };
 
+/* ============================================================
+   REDIRECT MANAGER
+============================================================ */
+
+function isRedirectFile(file) {
+  return (
+    getExtension(file.path) === "js" &&
+    file.path.startsWith("archive/data/")
+  );
+}
+
+
+/*
+ * Extract redirect URL from common JS redirect formats.
+ *
+ * Supported:
+ *
+ * window.location.replace("URL")
+ * window.location.href = "URL"
+ * location.href = "URL"
+ * location.replace("URL")
+ * const redirectURL = "URL"
+ * let redirectURL = "URL"
+ * var redirectURL = "URL"
+ */
+function extractRedirectURL(code) {
+
+  const patterns = [
+
+    /window\.location\.replace\s*\(\s*["'`](https?:\/\/[^"'`]+)["'`]\s*\)/i,
+
+    /window\.location\.href\s*=\s*["'`](https?:\/\/[^"'`]+)["'`]/i,
+
+    /location\.href\s*=\s*["'`](https?:\/\/[^"'`]+)["'`]/i,
+
+    /location\.replace\s*\(\s*["'`](https?:\/\/[^"'`]+)["'`]\s*\)/i,
+
+    /(?:const|let|var)\s+redirectURL\s*=\s*["'`](https?:\/\/[^"'`]+)["'`]/i
+
+  ];
+
+  for (const pattern of patterns) {
+
+    const match = code.match(pattern);
+
+    if (match && match[1]) {
+      return match[1];
+    }
+  }
+
+  return null;
+}
+
+
+/*
+ * Load one JS redirect file and analyze it.
+ */
+async function analyzeRedirect(file) {
+
+  try {
+
+    const response =
+      await fetch(rawURL(file.path), {
+        cache: "no-store"
+      });
+
+    if (!response.ok) {
+      throw new Error(
+        `HTTP ${response.status}`
+      );
+    }
+
+    const code =
+      await response.text();
+
+    const target =
+      extractRedirectURL(code);
+
+    return {
+      file,
+      target,
+      code,
+      ok: Boolean(target)
+    };
+
+  } catch (error) {
+
+    return {
+      file,
+      target: null,
+      code: "",
+      ok: false,
+      error: error.message
+    };
+  }
+}
+
+
+/*
+ * Render archive/data as Redirect Manager.
+ */
+async function renderRedirectManager() {
+
+  currentTitle.textContent =
+    "Redirect Manager";
+
+  currentDescription.textContent =
+    "Quản lý các file .js chuyển hướng trong archive/data/";
+
+  const redirectFiles =
+    state.files.filter(isRedirectFile);
+
+  if (!redirectFiles.length) {
+
+    contentArea.innerHTML = `
+      <div class="state">
+
+        <div class="state-inner">
+
+          <div class="state-icon">
+            ⚡
+          </div>
+
+          <h3>
+            Chưa có redirect
+          </h3>
+
+          <p>
+            Hãy thêm các file
+            <strong>.js</strong>
+            vào
+            <strong>archive/data/</strong>.
+          </p>
+
+        </div>
+
+      </div>
+    `;
+
+    return;
+  }
+
+  contentArea.innerHTML = `
+    <div class="file-grid" id="redirectGrid">
+
+      <div
+        class="state"
+        style="grid-column:1/-1;min-height:220px"
+      >
+        <div class="state-inner">
+          <div class="spinner"></div>
+          <h3>Đang phân tích redirect...</h3>
+          <p>
+            Đọc URL đích từ các file JavaScript.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  `;
+
+  const grid =
+    document.querySelector("#redirectGrid");
+
+  grid.innerHTML = "";
+
+  for (
+    let index = 0;
+    index < redirectFiles.length;
+    index++
+  ) {
+
+    const result =
+      await analyzeRedirect(
+        redirectFiles[index]
+      );
+
+    const card =
+      createRedirectCard(
+        result,
+        index
+      );
+
+    grid.appendChild(card);
+  }
+}
+
+
+/*
+ * Create redirect card.
+ */
+function createRedirectCard(result, index) {
+
+  const card =
+    document.createElement("div");
+
+  card.className =
+    "redirect-card";
+
+  card.style.animationDelay =
+    `${Math.min(index * 30, 250)}ms`;
+
+  const file =
+    result.file;
+
+  const pages =
+    pagesURL(file.path);
+
+  const raw =
+    rawURL(file.path);
+
+  const target =
+    result.target;
+
+  card.innerHTML = `
+
+    <div class="redirect-icon">
+      ⚡
+    </div>
+
+    <div class="redirect-info">
+
+      <div
+        class="redirect-name"
+        title="${escapeHTML(getName(file.path))}"
+      >
+        ${escapeHTML(getName(file.path))}
+      </div>
+
+      ${
+        target
+          ? `
+            <div
+              class="redirect-target"
+              title="${escapeHTML(target)}"
+            >
+              <span>→</span>
+              ${escapeHTML(target)}
+            </div>
+
+            <div class="redirect-status">
+              Redirect detected
+            </div>
+          `
+          : `
+            <div class="redirect-target">
+              <span>!</span>
+              Không tìm thấy URL redirect
+            </div>
+
+            <div class="redirect-status error">
+              Invalid redirect file
+            </div>
+          `
+      }
+
+    </div>
+
+    <div class="redirect-actions">
+
+      ${
+        target
+          ? `
+            <button
+              class="redirect-btn primary"
+              data-open-target
+            >
+              ↗ Open
+            </button>
+
+            <button
+              class="redirect-btn"
+              data-copy-target
+            >
+              ⧉ Copy Target
+            </button>
+          `
+          : ""
+      }
+
+      <button
+        class="redirect-btn"
+        data-copy-pages
+      >
+        🔗 Copy JS Link
+      </button>
+
+      <button
+        class="redirect-btn"
+        data-preview-code
+      >
+        ≡ View JS
+      </button>
+
+    </div>
+  `;
+
+
+  const openTarget =
+    card.querySelector(
+      "[data-open-target]"
+    );
+
+  const copyTarget =
+    card.querySelector(
+      "[data-copy-target]"
+    );
+
+  const copyPages =
+    card.querySelector(
+      "[data-copy-pages]"
+    );
+
+  const previewCode =
+    card.querySelector(
+      "[data-preview-code]"
+    );
+
+
+  if (openTarget) {
+
+    openTarget.onclick = () => {
+
+      window.open(
+        target,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    };
+  }
+
+
+  if (copyTarget) {
+
+    copyTarget.onclick = () => {
+
+      copyText(
+        target,
+        "Đã copy link đích!"
+      );
+    };
+  }
+
+
+  copyPages.onclick = () => {
+
+    copyText(
+      pages,
+      "Đã copy link redirect!"
+    );
+  };
+
+
+  previewCode.onclick = () => {
+
+    openRedirectCode(
+      file,
+      result.code,
+      target
+    );
+  };
+
+
+  return card;
+}
+
+
+/*
+ * Preview JS redirect source.
+ */
+function openRedirectCode(
+  file,
+  code,
+  target
+) {
+
+  modalTitle.textContent =
+    getName(file.path);
+
+  modalPath.textContent =
+    file.path;
+
+  modalBody.innerHTML = `
+
+    <div class="modal-actions">
+
+      ${
+        target
+          ? `
+            <button
+              class="small-btn primary"
+              onclick="copyText(
+                '${escapeJS(target)}',
+                'Đã copy link đích!'
+              )"
+            >
+              ⧉ Copy Target
+            </button>
+          `
+          : ""
+      }
+
+      <button
+        class="small-btn"
+        onclick="copyText(
+          '${escapeJS(pagesURL(file.path))}',
+          'Đã copy link redirect!'
+        )"
+      >
+        🔗 Copy JS Link
+      </button>
+
+      <a
+        class="small-btn"
+        href="${githubURL(file.path)}"
+        target="_blank"
+        rel="noopener"
+      >
+        ↗ GitHub
+      </a>
+
+    </div>
+
+    ${
+      target
+        ? `
+          <div
+            style="
+              margin-bottom:12px;
+              padding:13px;
+              border:1px solid rgba(80,216,144,.14);
+              border-radius:12px;
+              background:rgba(80,216,144,.045);
+              color:#9fe8bd;
+              font-size:11px;
+            "
+          >
+            ⚡ Redirect target:
+            <strong>
+              ${escapeHTML(target)}
+            </strong>
+          </div>
+        `
+        : ""
+    }
+
+    <pre class="code-preview">${escapeHTML(code)}</pre>
+  `;
+
+  modalBackdrop.classList.add("show");
+}
 
 /* ============================================================
    INITIALIZE
