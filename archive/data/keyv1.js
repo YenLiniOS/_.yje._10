@@ -1,1 +1,1 @@
-window.location.replace("https://tasksub.io/OFBnhs");
+window.location.replace("https://contactyounj.netlify.app");
